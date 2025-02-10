@@ -20,15 +20,14 @@
 
 #define INITIAL_CAPACITY 2 //Initial stack capacity
 
-#ifndef STACK_H
-#define STACK_H
+#ifndef STACK_H // Hvis stack_h ikke er defineret...
+#define STACK_H // Definer stack_h, så vi ikke inkludere filen flere gange
 
 //Forward declaration of struct stack
 struct stack;
 
 //Functions prototypes for stack operations
 struct stack *stack_alloc(void);        //Allocate and initialize stack
-void stack_free(struct stack *);
 int stack_height(struct stack *s);      // Return current number of elements in stack
 int stack_capacity(struct stack *s);    // Return the current capacity of the stack
 int stack_print(struct stack *s);       // Print stack contents
@@ -216,10 +215,6 @@ int stack_pop(struct stack *s, int *dst) {
 
     return 0; //succes
 }
-
-
-
-
 
 
 
