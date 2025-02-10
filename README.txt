@@ -1,1 +1,1 @@
-This code is wrong. Still need to do some trouble shooting
+ON GOD DET HER ER EN MOVIE
