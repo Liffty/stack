@@ -1,236 +1,229 @@
+//
 //  main.c
 //  StackLøve.c
 //
 //  Created by jonas jakobsen on 10/02/2025.
 //
-//  Basic Compilation:
-//  gcc -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror main.c -o new_stack.out
-//
-//  Full Warnings and Analysis:
-//  gcc -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror \
-//  -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes \
-//  -Wmissing-declarations -Wfloat-equal -Wformat=2 \
-//  -fanalyzer main.c -o new_stack.out
-//
 
 
-#include <stdio.h> // Standard I/O functions (printf, etc.)
-#include <stdlib.h> // Memory allocation (malloc, realloc, free)
-#include <assert.h> // Assertion for debugging
+//  Skal comp med:
 
-#define INITIAL_CAPACITY 2 //Initial stack capacity
+/*gcc -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror main.c -o new_stack.out
+*/
 
-#ifndef STACK_H // Hvis stack_h ikke er defineret...
-#define STACK_H // Definer stack_h, så vi ikke inkludere filen flere gange
+/* gcc -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror \
+-Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes \
+-Wmissing-declarations -Wfloat-equal -Wformat=2 \
+-fanalyzer main.c -o new_stack.out
+*/
 
-//Forward declaration of struct stack
-struct stack;
 
-//Functions prototypes for stack operations
-struct stack *stack_alloc(void);        //Allocate and initialize stack
-int stack_height(struct stack *s);      // Return current number of elements in stack
-int stack_capacity(struct stack *s);    // Return the current capacity of the stack
-int stack_print(struct stack *s);       // Print stack contents
-int stack_push(struct stack *s, int x); // Push an element onto the stack
-int stack_pop(struct stack *s, int *dst); //Pop an element from the stack
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+#define INITIAL_CAPACITY 2 //Relg 7
+
+#ifndef STACK_H
+#define STACK_H
+
+struct stack; // Forward declaration af struct
+
+struct stack *stack_alloc(void);
+int stack_height(struct stack *s);
+int stack_capacity(struct stack *s);
+int stack_print(struct stack *s);
+int stack_push(struct stack *s, int x);
+int stack_pop(struct stack *s, int *dst);
 
 #endif
 
 /*
- * Struct defination: stack
- * Denne struct repræsentere en dynamisk stack med:
- *  -Data: Pointer til et array af integers (Stack elementet)
- *  -Height: Antallet af elementer i stacken på tidspunktet
- *  -Capacity: Hvor mange elementer som kan være i stacken
+ laver en struct stack
  */
 struct stack {
-    int *data;      //Dynamic array for sorting stack elements.
-    int height;     //Number of elements in stack
-    int capacity;   //Current capacity of stack
+    int *data;
+    int height;
+    int capacity;
 };
 
 /*
- *Funktion: stack_alloc
- *--------------------
- *Allocats memory for a new stack and initializes it.
- *Returns:
- *  -Pointer to a new stack if succesful
- *  -NULL if memory allocation fails
+ Funktion til at allocere og initializere en stack
  */
 struct stack *stack_alloc(void) {
-    struct stack *s = (struct stack *)malloc(sizeof(struct stack)); // Allocate memory for stack structure
-
-    //Check om malloc fejled
+    struct stack *s = (struct stack *)malloc(sizeof(struct stack));
+    
+    //Check retur typen af malloc for data array eller stack
     if (s == NULL) {
         fprintf(stderr, "Error: Memory allocation failed for stack structure. \n");
         return NULL;
     }
-
-    s->data = (int *)malloc(INITIAL_CAPACITY * sizeof(int)); // Allocate memory for stack elements
-
-    //Check om malloc fejlede for stack data
+    
+    s->data = (int *)malloc(INITIAL_CAPACITY * sizeof(int));
+    
+    //Check retur typen af malloc for data array eller stack
     if (s->data == NULL) {
         fprintf(stderr, "Error: Memory allocation failed for stack structure. \n");
-        free(s); //Free tidligere brugt allokeret stack struktur
+        free(s);
         return NULL;
     }
-
-    // Initialize stack properties
+    
     s->height = 0;
     s->capacity = INITIAL_CAPACITY;
-
+    
     return s;
 }
 
 /*
- *Funktion: stack_height
- *-----------------------
- *Retunere antallet af elementer i stacken
- *Sikre at stack pointeren er valid før den bliver brugt
+ Retunere hvor mange elementer som er i vores stack. Altså hvor mange elementer som er blevet pushet og ikke poppet endnu.
  */
 int stack_height(struct stack *s) {
-    // valider stack pointer ikke er NULL
+    // valider stack pointer
     assert(s != NULL);
-
+    
     return s->height;
 }
 
 /*
- *Function: Stack_capacity
- *------------------------
- *Returns the current capacity of the stack.
+ Retunere størreslen af vores stack, altså hvor mange elemnter som kan være i vores stack.
  */
 int stack_capacity(struct stack *s) {
-    assert(s != NULL); //Tjekker om stack pointeren ikke er NULL
+    assert(s != NULL);
     return s->capacity;
 }
-
+ 
 
 /*
- *Function: stack_print
- *-----------------------
- *Prints the elements in the stack in the format: "37 42 34 . \n"
- *If the stack is empty, prints ".\n"
+ Skal printe som: "37 42 34 . \n"
  */
 int stack_print(struct stack *s) {
-
+    
     //Valider input
     assert(s != NULL);
-
+    
     if (s->height == 0) {
-        printf(".\n"); //For en empty stack
+        printf(".\n");
         return 0;  //Retunere 0 som succes
     }
-
+    
     //Print alle elemnter i stacken
     for (int i = 0; i < s->height; i++) {
         printf("%d ", s->data[i]);
         if (i < s->height - 1) {
-            printf(" "); //Mellemrum i mellem
+            printf(" ");
         }
     }
-
-    printf(" .\n"); //End marker
+    
+    printf(" .\n");
     return 0;
 }
 
 /*
- *Function: stack_push
- *-------------------
- *Pushes an element into the stack.
- *If the stack is full, it doubles its capacity before adding the new element
- *Returns:
- *  - 0 on succes
- *  - -1 if memory allocation fails'
- *  Det var det han sagde til forlæsningerne
+ Skal ligge et elemnet ned i vores stack
  */
 int stack_push(struct stack *s, int x) {
-    assert(s != NULL); //Validere pointer som vi plejer
-
+    assert(s != NULL);
+    
     //Hvis stacken er fuld, fordobl dens kapacitet
     if (s->height == s->capacity) {
-        int new_capacity = s->capacity * 2; //Her fordubler vi den
-        int *new_data = realloc(s->data, (size_t)new_capacity * sizeof(int));
-
+        int new_capacity = s->capacity * 2;
+        int *new_data = (int *)malloc((size_t)new_capacity * sizeof(int));
+        
         if (new_data == NULL) {
-            return -1; //Hvis allokeringen af hukkomelse fejlede
+            return -1; //fejl, ikke nok hukommelse
         }
-
+        
+        //Kopier eksisternde data manuelt
+        for (int i = 0; i < s->height; i++) {
+            new_data[i] = s->data[i];
+        }
+        
+        //Frigør den gamle hukommelse
+        free(s->data);
+        
+        
+        //Opdater stacken
         s->data = new_data;
         s->capacity = new_capacity;
     }
-
-
+    
+    
     //tilføj et element
-    s->data[s->height] = x; // Tilføjer et element til stacken
-    s->height++; //Increase stack height
-
+    s->data[s->height] = x;
+    s->height++;
+    
     return 0; //Succes
 }
 
 
 
 /*
- *Function: stack_pop
- *-------------------
- *Removes the top element from the stack and stores it in 'dst'
- *If the stack becomes too empty, it shrinks its capacity
- *Returns:
- *  - 0 on succes
- *  - -1 if the is empty
+ Skal tage det øverste element ud af vores stack
  */
 int stack_pop(struct stack *s, int *dst) {
-    assert(s != NULL); //Valider pointer ikke er NULL
-
-
+    assert(s != NULL);
+    
+    
     if (s->height == 0) {
         printf("Stack is empty! Cannot pop.\n");
         return -1; //Fejl, for stacken er tom
     }
-
+    
     *dst = s->data[s->height - 1]; //Gem værdien
     s->height--; //Reducer højden
-
-
+    
     //shring stack hvis den bliver for tom (under 1/4 af kapaciteten)
     int new_capacity = s->capacity;
-    if (s->height > 0 && s->height <= s->capacity / 4) {
+    
+    if (s->height > 0 && s->height < s->capacity / 4) {
         new_capacity = s->capacity / 2;
-        if (new_capacity < 2) { // Behold en minimumskapacitet på 2
+        if (new_capacity < 2) { // Behold en minimumskapacitet
             new_capacity = 2;
         }
     }
-
-//"Shrinking skal kun ske hvis capaciteten ændre sig
+    
+    
     if(new_capacity < s->capacity) {
-        printf("Shrinking triggered! Old capacity: %d, New capacity: %d\n", s->capacity, new_capacity); //DEBUG
-
-        int *new_data = realloc(s->data, (size_t)new_capacity * sizeof(int));
-        if (new_data != NULL) {
-            s->data = new_data;
-            s->capacity = new_capacity;
-            printf("Stack shrunk to capacity: %d\n", s->capacity);
+        int *new_data = (int *)malloc((size_t)new_capacity * sizeof(int));
+        
+        if (new_data == NULL) {
+            return -1; //Fejl, ikke nok hukommelse
         }
+        
+        //Kopier eksisternde data manuelt
+        for (int i = 0; i < s->height; i++) {
+            new_data[i] = s->data[i];
+        }
+        
+        //frigør gammel data hukommelse
+        free(s->data);
+        
+        //Opdater stacken
+        s->data = new_data;
+        s->capacity = new_capacity;
+        printf("Stack shrunk to capacity: %d\n", s->capacity);
+        
     }
-
+    
     return 0; //succes
 }
 
 
 
-// =============================================
-//                TEST FUNCTION
-// =============================================
+
+
+
+
+//TEST FUNKTION
 int main(void) {
-    struct stack *s = stack_alloc(); //Lav en stack
-
+    struct stack *s = stack_alloc();
+    
     if (s == NULL) {
-        return EXIT_FAILURE; //stop hvis allokering fejlede
+        return EXIT_FAILURE;
     }
+    
+    int popped_value;
 
-    int popped_value; //Gem popped værdi
-
-    //Test for push operations
     stack_push(s, 10);
     stack_push(s, 20);
     stack_push(s, 30);
@@ -244,10 +237,11 @@ int main(void) {
     stack_pop(s, &popped_value);  // Burde trigger en shrink
 
     stack_print(s);
-
+    
     //Clean up
     free(s->data);
     free(s);
-
+    
     return 0;
 }
+
